@@ -1,0 +1,40 @@
+Build a small web application for managing events and participants.
+
+The application should have two types of users: Participants and Administrators.
+
+Participant should be able to:
+
+Create an account and log in
+Browse available events
+View event details
+Register for an event
+View events they have registered for
+Access their participation certificate once it has been issued
+
+Administrator should be able to:
+
+Log in to an admin dashboard
+Create and edit events
+View registered participants
+Change participant status
+Upload a certificate for a participant
+
+Technical requirements:
+
+Use a relational database
+Implement authentication and authorization
+Implement proper validation
+Deploy the application somewhere accessible
+Provide the Git repository
+Include a short README explaining your technical decisions
+
+You may choose your own:
+
+Frontend framework
+Backend framework
+Database
+Hosting/deployment solution
+UI design
+Libraries and APIs
+
+You are not expected to build a production-ready application. We are primarily evaluating your engineering decisions, code quality, architecture, and ability to deliver a functional product within the time limit.
