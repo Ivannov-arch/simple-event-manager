@@ -1,58 +1,100 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
-import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function HomePage() {
+  // If user is already logged in, redirect straight to dashboard
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) redirect("/dashboard");
+
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
-            </div>
-            {!hasEnvVars ? (
-              <EnvVarWarning />
-            ) : (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
-            )}
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
-        </div>
-
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
+    <main className="min-h-screen bg-background flex flex-col">
+      {/* Navbar */}
+      <nav className="border-b border-border">
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+          <span className="font-semibold text-sm tracking-tight">EventHub</span>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/auth/login"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-md hover:bg-accent"
             >
-              Supabase
-            </a>
+              Login
+            </Link>
+            <Link
+              href="/auth/sign-up"
+              className="text-sm font-medium px-3 py-1.5 rounded-md bg-foreground text-background hover:opacity-90 transition-opacity"
+            >
+              Sign up
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="flex-1 flex flex-col items-center justify-center text-center px-4 py-24">
+        <div className="max-w-2xl space-y-6">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+            Manage Events &<br />
+            <span className="text-muted-foreground">Track Participants</span>
+          </h1>
+          <p className="text-muted-foreground text-lg leading-relaxed">
+            A simple platform to browse events, register your attendance,
+            and access your participation certificates — all in one place.
           </p>
-          <ThemeSwitcher />
-        </footer>
-      </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Link
+              href="/auth/sign-up"
+              className="px-5 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              Get Started
+            </Link>
+            <Link
+              href="/auth/login"
+              className="px-5 py-2.5 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors"
+            >
+              Login
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="border-t border-border py-16 px-4">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8">
+          {[
+            {
+              icon: "🗓️",
+              title: "Browse Events",
+              desc: "Discover and explore upcoming events open for registration.",
+            },
+            {
+              icon: "✅",
+              title: "Register Instantly",
+              desc: "Sign up for events in one click. Capacity limits handled automatically.",
+            },
+            {
+              icon: "🏆",
+              title: "Get Certificates",
+              desc: "Access your participation certificate directly from your dashboard.",
+            },
+          ].map((f) => (
+            <div key={f.title} className="text-center space-y-2">
+              <div className="text-3xl">{f.icon}</div>
+              <h3 className="font-semibold text-sm">{f.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+        EventHub · Built with Next.js & Supabase
+      </footer>
     </main>
   );
 }
