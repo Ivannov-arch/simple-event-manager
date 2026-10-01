@@ -5,6 +5,7 @@ import { DeleteEventButton } from "./delete-button";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 import {
   Calendar,
   Clock,
@@ -113,9 +114,9 @@ export default async function AdminEventDetailPage({
             <StatusPill status={event.status} />
           </div>
           {event.description && (
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl">
-              {event.description}
-            </p>
+            <div className="pt-2 max-w-2xl">
+              <MarkdownRenderer content={event.description} />
+            </div>
           )}
         </div>
         <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">

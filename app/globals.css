@@ -77,3 +77,24 @@
   @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-indigo-300 to-sky-400;
 }
 
+/* Hide native black browser indicator and rely on custom UI icons */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  color-scheme: dark !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0 !important;
+  cursor: pointer;
+}
+

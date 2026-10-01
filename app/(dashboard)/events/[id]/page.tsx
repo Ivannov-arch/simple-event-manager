@@ -4,6 +4,7 @@ import { RegisterButton } from "./register-button";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 import {
   Calendar,
   Clock,
@@ -92,9 +93,9 @@ export default async function EventDetailPage({
             {event.title}
           </h1>
           {event.description && (
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed pt-1">
-              {event.description}
-            </p>
+            <div className="pt-2">
+              <MarkdownRenderer content={event.description} />
+            </div>
           )}
         </div>
       </div>
