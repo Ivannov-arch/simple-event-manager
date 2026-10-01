@@ -44,7 +44,7 @@ async function getAdminUser() {
     .eq("id", userId)
     .single();
 
-  if (error || profile?.role !== "ADMIN") {
+  if (error || profile?.role?.toUpperCase() !== "ADMIN") {
     throw new Error("Forbidden: Admin access required.");
   }
 

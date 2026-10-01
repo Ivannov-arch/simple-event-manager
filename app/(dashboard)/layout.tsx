@@ -23,7 +23,7 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  const isAdmin = profile?.role === "ADMIN";
+  const isAdmin = profile?.role?.toUpperCase() === "ADMIN";
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30">

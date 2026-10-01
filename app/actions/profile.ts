@@ -120,7 +120,7 @@ export async function updateUserStatus(
     .eq("id", userId)
     .single();
 
-  if (callerError || callerProfile?.role !== "ADMIN") {
+  if (callerError || callerProfile?.role?.toUpperCase() !== "ADMIN") {
     throw new Error("Forbidden: Admin access required.");
   }
 
