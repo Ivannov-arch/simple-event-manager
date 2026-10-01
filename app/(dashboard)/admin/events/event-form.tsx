@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  Sparkles,
+  Loader2,
+  AlertCircle,
+  FileText,
+  Activity,
+} from "lucide-react";
 
 interface EventFormProps {
   mode: "create" | "edit";
@@ -72,83 +76,93 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{mode === "create" ? "Create Event" : "Edit Event"}</CardTitle>
-        <CardDescription>
-          {mode === "create"
-            ? "Fill in the details to create a new event."
-            : "Update the event information below."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
-          <div className="grid gap-2">
-            <Label htmlFor="title">Title *</Label>
+    <div className="rounded-3xl glass-panel p-6 sm:p-8 border-white/10 space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Title */}
+        <div className="space-y-1.5">
+          <Label htmlFor="title" className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+            <FileText className="h-3.5 w-3.5 text-violet-400" />
+            <span>Event Title *</span>
+          </Label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Next.js & Supabase Masterclass"
+            required
+            className="bg-white/5 border-white/10 focus:border-violet-500 rounded-xl"
+          />
+        </div>
+
+        {/* Description */}
+        <div className="space-y-1.5">
+          <Label htmlFor="description" className="text-xs font-semibold text-muted-foreground">
+            Description (Markdown / text)
+          </Label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Provide full details, itinerary, prerequisites, and speaker background..."
+            rows={4}
+            className="flex w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-violet-500 focus-visible:ring-1 focus-visible:ring-violet-500 transition-colors resize-none"
+          />
+        </div>
+
+        {/* Location */}
+        <div className="space-y-1.5">
+          <Label htmlFor="location" className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+            <MapPin className="h-3.5 w-3.5 text-violet-400" />
+            <span>Location / Link</span>
+          </Label>
+          <Input
+            id="location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Online (Zoom) or Physical Address"
+            className="bg-white/5 border-white/10 focus:border-violet-500 rounded-xl"
+          />
+        </div>
+
+        {/* Start / End Time */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="start-time" className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5 text-violet-400" />
+              <span>Start Date &amp; Time *</span>
+            </Label>
             <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Event title"
+              id="start-time"
+              type="datetime-local"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
               required
+              className="bg-white/5 border-white/10 focus:border-violet-500 rounded-xl text-foreground"
             />
           </div>
-
-          {/* Description */}
-          <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Event description (optional)"
-              rows={3}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
-            />
-          </div>
-
-          {/* Location */}
-          <div className="grid gap-2">
-            <Label htmlFor="location">Location</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="end-time" className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5 text-sky-400" />
+              <span>End Date &amp; Time *</span>
+            </Label>
             <Input
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Online"
+              id="end-time"
+              type="datetime-local"
+              value={endTime}
+              min={startTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              required
+              className="bg-white/5 border-white/10 focus:border-violet-500 rounded-xl text-foreground"
             />
           </div>
+        </div>
 
-          {/* Start / End Time */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="start-time">Start Date & Time *</Label>
-              <Input
-                id="start-time"
-                type="datetime-local"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="end-time">End Date & Time *</Label>
-              <Input
-                id="end-time"
-                type="datetime-local"
-                value={endTime}
-                min={startTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Capacity */}
-          <div className="grid gap-2">
-            <Label htmlFor="capacity">
-              Capacity{" "}
-              <span className="text-muted-foreground font-normal">(leave empty for unlimited)</span>
+        {/* Capacity & Status */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="capacity" className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Users className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Capacity (Leave empty for Unlimited)</span>
             </Label>
             <Input
               id="capacity"
@@ -156,52 +170,74 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
               min={1}
               value={capacity}
               onChange={(e) => setCapacity(e.target.value)}
-              placeholder="Unlimited"
+              placeholder="e.g. 50"
+              className="bg-white/5 border-white/10 focus:border-violet-500 rounded-xl"
             />
           </div>
 
-          {/* Status */}
-          <div className="grid gap-2">
-            <Label htmlFor="status">Status</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="status" className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Activity className="h-3.5 w-3.5 text-violet-400" />
+              <span>Publishing Status</span>
+            </Label>
             <select
               id="status"
               value={status}
               onChange={(e) => setStatus(e.target.value as EventStatus)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex h-10 w-full rounded-xl border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:border-violet-500 focus-visible:ring-1 focus-visible:ring-violet-500 transition-colors"
             >
               {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s} className="bg-slate-900 text-foreground">
+                  {s}
+                </option>
               ))}
             </select>
           </div>
+        </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
-          <div className="flex gap-3 pt-2">
-            <Button type="submit" disabled={isLoading}>
-              {isLoading
-                ? mode === "create" ? "Creating..." : "Saving..."
-                : mode === "create" ? "Create Event" : "Save Changes"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
+        {error && (
+          <div className="flex items-center gap-2 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{error}</span>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+        )}
+
+        <div className="flex gap-3 pt-2">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-violet-600/20 active:scale-95"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Processing...
+              </span>
+            ) : mode === "create" ? (
+              "Publish Event"
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isLoading}
+            className="border-white/10 hover:bg-white/5 rounded-xl"
+          >
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
 
 /** Convert ISO string to datetime-local input value */
 function toDatetimeLocal(iso: string) {
   const d = new Date(iso);
-  // Format: YYYY-MM-DDTHH:mm
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+

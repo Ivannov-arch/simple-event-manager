@@ -5,16 +5,51 @@ import { DeleteEventButton } from "./delete-button";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  Edit,
+  ArrowLeft,
+  Shield,
+  Activity,
+} from "lucide-react";
 
 function StatusPill({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    DRAFT: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
-    PUBLISHED: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-    COMPLETED: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-    CANCELLED: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+  const map: Record<string, { bg: string; text: string; border: string }> = {
+    DRAFT: {
+      bg: "bg-amber-500/10",
+      text: "text-amber-400",
+      border: "border-amber-500/20",
+    },
+    PUBLISHED: {
+      bg: "bg-emerald-500/10",
+      text: "text-emerald-400",
+      border: "border-emerald-500/20",
+    },
+    COMPLETED: {
+      bg: "bg-blue-500/10",
+      text: "text-blue-400",
+      border: "border-blue-500/20",
+    },
+    CANCELLED: {
+      bg: "bg-rose-500/10",
+      text: "text-rose-400",
+      border: "border-rose-500/20",
+    },
   };
+
+  const style = map[status] ?? {
+    bg: "bg-white/5",
+    text: "text-muted-foreground",
+    border: "border-white/10",
+  };
+
   return (
-    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${map[status] ?? "bg-muted text-muted-foreground"}`}>
+    <span
+      className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${style.bg} ${style.text} ${style.border}`}
+    >
       {status}
     </span>
   );
@@ -22,8 +57,12 @@ function StatusPill({ status }: { status: string }) {
 
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString("en-US", {
-    weekday: "short", month: "short", day: "numeric",
-    year: "numeric", hour: "2-digit", minute: "2-digit",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -45,78 +84,127 @@ export default async function AdminEventDetailPage({
 
   const regs = event.registrations as unknown as { count: number }[] | null;
   const registeredCount = regs?.[0]?.count ?? 0;
-
   const attendedCount = registrations.filter((r) => r.status === "ATTENDED").length;
 
   return (
-    <div className="space-y-8">
-      {/* Back */}
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link href="/admin/events">← Back to Events</Link>
-      </Button>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Back Button */}
+      <div>
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground -ml-2 gap-1.5"
+        >
+          <Link href="/admin/events">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to All Events</span>
+          </Link>
+        </Button>
+      </div>
 
-      {/* Event Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{event.title}</h1>
+      {/* Header */}
+      <div className="p-6 sm:p-8 rounded-3xl glass-panel border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="space-y-2 flex-1 min-w-0">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground truncate">
+              {event.title}
+            </h1>
             <StatusPill status={event.status} />
           </div>
           {event.description && (
-            <p className="text-muted-foreground">{event.description}</p>
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl">
+              {event.description}
+            </p>
           )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/admin/events/${id}/edit`}>Edit Event</Link>
+        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
+          <Button asChild variant="outline" size="sm" className="border-white/10 hover:bg-white/5 rounded-xl">
+            <Link href={`/admin/events/${id}/edit`} className="flex items-center gap-1.5">
+              <Edit className="h-4 w-4" />
+              <span>Edit Event</span>
+            </Link>
           </Button>
           <DeleteEventButton eventId={id} status={event.status} />
         </div>
       </div>
 
       {/* Info Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: "Location", value: event.location },
-          { label: "Start", value: formatDate(event.start_time) },
-          { label: "End", value: formatDate(event.end_time) },
-          {
-            label: "Capacity",
-            value: event.capacity === null ? "Unlimited" : String(event.capacity),
-          },
-        ].map((item) => (
-          <div key={item.label} className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">{item.label}</p>
-            <p className="text-sm font-medium mt-1">{item.value}</p>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-5 rounded-2xl glass-panel border-white/10">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Location
+          </p>
+          <p className="text-sm font-bold text-foreground mt-1 flex items-center gap-1">
+            <MapPin className="h-3.5 w-3.5 text-violet-400 shrink-0" />
+            <span className="truncate">{event.location}</span>
+          </p>
+        </div>
+
+        <div className="p-5 rounded-2xl glass-panel border-white/10">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Start Time
+          </p>
+          <p className="text-sm font-bold text-foreground mt-1">
+            {formatDate(event.start_time)}
+          </p>
+        </div>
+
+        <div className="p-5 rounded-2xl glass-panel border-white/10">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            End Time
+          </p>
+          <p className="text-sm font-bold text-foreground mt-1">
+            {formatDate(event.end_time)}
+          </p>
+        </div>
+
+        <div className="p-5 rounded-2xl glass-panel border-white/10">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Capacity Limit
+          </p>
+          <p className="text-sm font-bold text-foreground mt-1">
+            {event.capacity === null ? "Unlimited" : `${event.capacity} seats`}
+          </p>
+        </div>
       </div>
 
       {/* Participant Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Registered", value: registeredCount, color: "text-blue-600 dark:text-blue-400" },
-          { label: "Attended", value: attendedCount, color: "text-green-600 dark:text-green-400" },
-          {
-            label: "Fill Rate",
-            value: event.capacity
-              ? `${Math.round((registeredCount / event.capacity) * 100)}%`
-              : "—",
-            color: "text-foreground",
-          },
-        ].map((s) => (
-          <div key={s.label} className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">{s.label}</p>
-            <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-5 rounded-2xl glass-panel border-white/10">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Registered Attendees
+          </p>
+          <p className="text-3xl font-black mt-2 text-blue-400">{registeredCount}</p>
+        </div>
+
+        <div className="p-5 rounded-2xl glass-panel border-white/10">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Verified Attended
+          </p>
+          <p className="text-3xl font-black mt-2 text-emerald-400">{attendedCount}</p>
+        </div>
+
+        <div className="p-5 rounded-2xl glass-panel border-white/10">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Capacity Fill Rate
+          </p>
+          <p className="text-3xl font-black mt-2 text-foreground">
+            {event.capacity
+              ? `${Math.min(100, Math.round((registeredCount / event.capacity) * 100))}%`
+              : "Unlimited"}
+          </p>
+        </div>
       </div>
 
       {/* Participants Table */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4">
-          Participants ({registrations.length})
-        </h2>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+            <Users className="h-5 w-5 text-violet-400" />
+            <span>Registered Participants ({registrations.length})</span>
+          </h2>
+        </div>
         <ParticipantsTable
           registrations={registrations as Parameters<typeof ParticipantsTable>[0]["registrations"]}
           eventId={id}

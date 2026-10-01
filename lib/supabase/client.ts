@@ -5,7 +5,9 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
-      db: { schema: "simple_event_manager" },
+      db: {
+        schema: "simple_event_manager",
+      },
     },
   );
 }

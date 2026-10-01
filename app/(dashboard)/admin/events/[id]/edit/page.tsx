@@ -3,6 +3,7 @@ import { EventForm } from "../../event-form";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft, Edit } from "lucide-react";
 
 export default async function EditEventPage({
   params,
@@ -19,15 +20,24 @@ export default async function EditEventPage({
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link href={`/admin/events/${id}`}>← Back to Event</Link>
-      </Button>
+    <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">
+      <div>
+        <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground hover:text-foreground gap-1.5">
+          <Link href={`/admin/events/${id}`}>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Event Detail</span>
+          </Link>
+        </Button>
+      </div>
 
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Edit Event</h1>
-        <p className="text-muted-foreground mt-1 truncate">
-          Editing: {event.title}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-500/10 text-violet-300 text-xs font-semibold border border-violet-500/20 mb-2">
+          <Edit className="h-3 w-3" />
+          <span>Event Editor</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Modify Event</h1>
+        <p className="text-muted-foreground text-sm mt-1 truncate">
+          Currently editing &ldquo;{event.title}&rdquo;
         </p>
       </div>
 

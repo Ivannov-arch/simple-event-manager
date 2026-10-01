@@ -4,6 +4,17 @@ import { RegisterButton } from "./register-button";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  Award,
+  ArrowLeft,
+  Sparkles,
+  ExternalLink,
+  ShieldCheck,
+} from "lucide-react";
 
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -53,98 +64,145 @@ export default async function EventDetailPage({
     startDate.toDateString() === endDate.toDateString();
 
   return (
-    <div className="max-w-2xl space-y-8">
-      {/* Back */}
-      <Button asChild variant="ghost" size="sm" className="-ml-2">
-        <Link href="/events">← Back to Events</Link>
-      </Button>
-
-      {/* Event Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
-        {event.description && (
-          <p className="text-muted-foreground leading-relaxed">
-            {event.description}
-          </p>
-        )}
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
+      {/* Back Button */}
+      <div>
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground -ml-2 gap-1.5"
+        >
+          <Link href="/events">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Events</span>
+          </Link>
+        </Button>
       </div>
 
-      {/* Info Card */}
-      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-              Date
+      {/* Main Header */}
+      <div className="p-8 rounded-3xl glass-panel relative overflow-hidden border-white/10 space-y-4">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-violet-600/15 rounded-full blur-[90px] pointer-events-none" />
+        <div className="relative z-10 space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-semibold">
+            <Sparkles className="h-3 w-3" />
+            <span>{event.status} Event</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+            {event.title}
+          </h1>
+          {event.description && (
+            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed pt-1">
+              {event.description}
             </p>
-            <p className="font-medium">{formatDate(event.start_time)}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Info Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-5 rounded-2xl glass-panel border-white/10 flex items-start gap-3.5">
+          <div className="h-10 w-10 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center shrink-0">
+            <Calendar className="h-5 w-5" />
+          </div>
+          <div className="space-y-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Date & Schedule
+            </p>
+            <p className="font-semibold text-sm text-foreground">{formatDate(event.start_time)}</p>
             {!sameDay && (
-              <p className="text-muted-foreground text-xs">
-                to {formatDate(event.end_time)}
-              </p>
+              <p className="text-xs text-muted-foreground">Until {formatDate(event.end_time)}</p>
             )}
           </div>
+        </div>
 
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+        <div className="p-5 rounded-2xl glass-panel border-white/10 flex items-start gap-3.5">
+          <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0">
+            <Clock className="h-5 w-5" />
+          </div>
+          <div className="space-y-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Time
             </p>
-            <p className="font-medium">
+            <p className="font-semibold text-sm text-foreground">
               {formatTime(event.start_time)} – {formatTime(event.end_time)}
             </p>
+            <p className="text-xs text-muted-foreground">Local timezone</p>
           </div>
+        </div>
 
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+        <div className="p-5 rounded-2xl glass-panel border-white/10 flex items-start gap-3.5">
+          <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
+            <MapPin className="h-5 w-5" />
+          </div>
+          <div className="space-y-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Location
             </p>
-            <p className="font-medium">{event.location}</p>
+            <p className="font-semibold text-sm text-foreground">{event.location}</p>
+            <p className="text-xs text-muted-foreground">Venue / Platform</p>
           </div>
+        </div>
 
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-              Capacity
+        <div className="p-5 rounded-2xl glass-panel border-white/10 flex items-start gap-3.5">
+          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5" />
+          </div>
+          <div className="space-y-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Participant Capacity
             </p>
-            <p className="font-medium">
+            <p className="font-semibold text-sm text-foreground">
               {event.capacity === null
-                ? `${registeredCount} registered · Unlimited`
-                : `${registeredCount} / ${event.capacity} spots filled`}
+                ? `${registeredCount} registered (Unlimited)`
+                : `${registeredCount} / ${event.capacity} seats taken`}
             </p>
-            {isFull && (
-              <p className="text-xs text-red-500 font-medium">Event is full</p>
+            {isFull ? (
+              <p className="text-xs text-rose-400 font-bold">Capacity reached</p>
+            ) : (
+              <p className="text-xs text-emerald-400 font-medium">Spots available</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Certificate (if issued) */}
+      {/* Certificate Section (if issued) */}
       {myReg?.certificate_url && (
-        <div className="rounded-xl border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20 p-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-green-800 dark:text-green-300">
-              🎉 Your certificate is ready!
-            </p>
-            <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
-              Congratulations on attending this event.
-            </p>
+        <div className="p-6 rounded-2xl glass-panel border-emerald-500/30 bg-emerald-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="h-12 w-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <Award className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-emerald-300">
+                Official Certificate Ready!
+              </p>
+              <p className="text-xs text-emerald-400/80 mt-0.5">
+                Your attendance has been verified. Download your verified certificate.
+              </p>
+            </div>
           </div>
           <a
             href={myReg.certificate_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 text-sm font-medium text-green-700 dark:text-green-300 underline underline-offset-4 hover:opacity-80"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-black font-semibold text-xs hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20 self-start sm:self-auto"
           >
-            Download
+            <span>View Certificate</span>
+            <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
       )}
 
-      {/* Register / Cancel */}
-      <RegisterButton
-        eventId={event.id}
-        isRegistered={isRegistered}
-        registrationId={myReg?.id}
-        isFull={isFull}
-      />
+      {/* Register / Cancel Button Section */}
+      <div className="p-6 rounded-2xl glass-panel border-white/10">
+        <RegisterButton
+          eventId={event.id}
+          isRegistered={isRegistered}
+          registrationId={myReg?.id}
+          isFull={isFull}
+        />
+      </div>
     </div>
   );
 }
