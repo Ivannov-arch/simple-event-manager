@@ -114,6 +114,16 @@ Dokumen ini merangkum analisis akar masalah (*root cause*), perbaikan bug teknis
 
 ---
 
+### 🔴 Bug 10: Vercel Build Error `TS2345: Argument of type 'string' is not assignable to parameter of type 'Theme'`
+* **Gejala**: Deployment di Vercel gagal saat menjalankan `npm run build` dengan error TypeScript:
+  > *"components/theme-switcher.tsx(58,42): error TS2345: Argument of type 'string' is not assignable to parameter of type 'Theme'."*
+* **Akar Masalah**: Callback `onValueChange` pada `DropdownMenuRadioGroup` menghasilkan tipe `string`, sedangkan fungsi `setTheme` di `useTheme` mengekspektasikan union type `Theme` (`"dark" | "light" | "system"`).
+* **Solusi**:
+  - Mengekspor `type Theme` dari [theme-provider.tsx](file:///c:/Coding/event-manager/components/theme-provider.tsx).
+  - Melakukan type-casting `onValueChange={(e) => setTheme(e as Theme)}` pada [theme-switcher.tsx](file:///c:/Coding/event-manager/components/theme-switcher.tsx).
+
+---
+
 ## 2. Peningkatan Fitur & Antarmuka (UI/UX Overhaul)
 
 ### 🎨 1. Modernisasi Input Jadwal (Date & Time Picker)
