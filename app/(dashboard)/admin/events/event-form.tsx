@@ -135,14 +135,23 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
       return;
     }
 
-    const startISO = new Date(`${startDate}T${startTime}`).toISOString();
-    const endISO = new Date(`${endDate}T${endTime}`).toISOString();
+    const startDateObj = new Date(`${startDate}T${startTime}`);
+    const endDateObj = new Date(`${endDate}T${endTime}`);
 
-    if (new Date(startISO) >= new Date(endISO)) {
+    if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+      setError("Please specify valid start and end dates and times.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (startDateObj >= endDateObj) {
       setError("End time must be after start time.");
       setIsLoading(false);
       return;
     }
+
+    const startISO = startDateObj.toISOString();
+    const endISO = endDateObj.toISOString();
 
     const payload: EventPayload = {
       title,

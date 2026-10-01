@@ -54,8 +54,11 @@ export default async function EventDetailPage({
   });
   const isRegistered = !!myReg && myReg.status !== "CANCELLED";
 
-  const registrations = event.registrations as unknown as { count: number }[] | null;
-  const registeredCount = registrations?.[0]?.count ?? 0;
+  const registrations = event.registrations as unknown as
+    | { id: string; status: string }[]
+    | null;
+  const registeredCount =
+    registrations?.filter((r) => r.status !== "CANCELLED").length ?? 0;
   const isFull =
     event.capacity !== null && registeredCount >= event.capacity;
 

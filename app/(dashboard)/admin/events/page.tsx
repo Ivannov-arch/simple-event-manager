@@ -105,8 +105,10 @@ export default async function AdminEventsPage() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {events.map((event) => {
-                  const regs = event.registrations as unknown as { count: number }[] | null;
-                  const count = regs?.[0]?.count ?? 0;
+                  const regs = event.registrations as unknown as
+                    | { id: string; status: string }[]
+                    | null;
+                  const count = regs?.filter((r) => r.status !== "CANCELLED").length ?? 0;
                   return (
                     <tr
                       key={event.id}

@@ -85,7 +85,7 @@ export async function registerEvent(eventId: string) {
       .from("registrations")
       .select("id", { count: "exact", head: true })
       .eq("event_id", eventId)
-      .eq("status", "REGISTERED");
+      .neq("status", "CANCELLED");
 
     if (countError) throw new Error(countError.message);
 

@@ -124,6 +124,61 @@ Dokumen ini merangkum analisis akar masalah (*root cause*), perbaikan bug teknis
 
 ---
 
+### 🔴 Bug 11: Infinite Loading & Redirect Loop pada Google OAuth Callback
+* **Gejala**: Login atau registrasi via tombol *Continue with Google* mengalami *infinite loading* atau terlempar ke `Site URL` yang salah jika diakses dari domain Vercel atau localhost.
+* **Akar Masalah**:
+  1. Parameter `redirectTo` mengirim query string dinamis `?next=/dashboard` (`.../auth/callback?next=/dashboard`). Supabase GoTrue Auth kaku dalam pencocokan URL dan mengabaikan parameter jika query string tidak cocok persis dengan entri di *Redirect URLs Allowlist*.
+  2. Saat diabaikan, Supabase mem-fallback ke default `Site URL`, menyebabkan cookie verifier PKCE tidak ditemukan (berada di domain berbeda) dan alur auth macet.
+  3. Handler `app/auth/callback/route.ts` sebelumnya me-redirect ke `/auth/error` tanpa query pesan error asli dari Supabase.
+* **Solusi**:
+  1. Membersihkan query string dari `redirectTo` di [login-form.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/components/login-form.tsx) dan [sign-up-form.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/components/sign-up-form.tsx) menjadi `${window.location.origin}/auth/callback`.
+  2. Menetapkan nilai default `next` langsung ke `/dashboard` di [route.ts](file:///c:/Coding/Friends/Jeremia/event-manager/app/auth/callback/route.ts).
+  3. Meneruskan pesan error asli Supabase ke `/auth/error?error=${encodeURIComponent(error.message)}` agar kegagalan auth dapat terdeteksi transparan.
+
+---
+
+### 🔴 Bug 12: Kuota Acara Fiktif Penuh Akibat Pendaftaran `CANCELLED` Dihitung Aktif
+* **Gejala**: Acara yang kursinya telah dibatalkan oleh peserta tetap berstatus *Full* / Kuota Penuh di katalog acara (`/events`), sehingga calon peserta baru terhalang mendaftar.
+* **Akar Masalah**:
+  - Query pembacaan event di `app/actions/event.ts` menggunakan seleksi agregasi `registrations(count)` dari PostgREST yang menghitung **seluruh total baris** pada tabel `registrations`, termasuk baris peserta yang sudah dibatalkan (`status = 'CANCELLED'`).
+* **Solusi**:
+  1. Mengubah seleksi query menjadi `registrations(id, status)` di [event.ts](file:///c:/Coding/Friends/Jeremia/event-manager/app/actions/event.ts).
+  2. Memperbarui perhitungan jumlah peserta aktif di seluruh tampilan ([events/page.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/(dashboard)/events/page.tsx), [events/[id]/page.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/(dashboard)/events/[id]/page.tsx), [admin/page.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/(dashboard)/admin/page.tsx), [admin/events/page.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/(dashboard)/admin/events/page.tsx), dan [admin/events/[id]/page.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/(dashboard)/admin/events/[id]/page.tsx)) agar memfilter pendaftaran aktif (`status !== "CANCELLED"`).
+
+---
+
+### 🔴 Bug 13: Potensi Overbooking Kapasitas Saat Peserta Berstatus `ATTENDED`
+* **Gejala**: Kapasitas maksimal event bisa terlampaui (*overbooked*) jika administrator sudah menandai kehadiran peserta menjadi `ATTENDED`.
+* **Akar Masalah**:
+  - Validasi kapasitas pendaftaran pada `registerEvent` di `app/actions/register.ts` hanya menghitung peserta dengan filter `.eq("status", "REGISTERED")`. Ketika peserta ditandai `ATTENDED`, kuota terdaftar berkurang di mata sistem validasi dan membuka celah pendaftaran berlebih.
+* **Solusi**:
+  - Mengubah filter kapasitas menjadi `.neq("status", "CANCELLED")` pada [register.ts](file:///c:/Coding/Friends/Jeremia/event-manager/app/actions/register.ts), sehingga baik peserta `REGISTERED` maupun `ATTENDED` tetap dihitung menempati kuota kursi.
+
+---
+
+### 🔴 Bug 14: Unhandled Crash `RangeError: Invalid time value` pada Event Form
+* **Gejala**: Mengirim input tanggal/jam yang tidak lengkap atau tidak valid pada form pembuatan/edit event memicu crash React runtime (*blank screen*).
+* **Akar Masalah**:
+  - Konversi `.toISOString()` dipanggil langsung pada `new Date(...)` tanpa memverifikasi apakah objek Date valid melalui `isNaN(date.getTime())`.
+* **Solusi**:
+  - Menambahkan pengecekan `isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())` serta validasi kronologis sebelum konversi ISO di [event-form.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/(dashboard)/admin/events/event-form.tsx).
+
+---
+
+### 🔴 Bug 15: Error `supabase.auth.getClaims is not a function` & Redirect Reset Password
+* **Gejala**:
+  1. Mengubah password pada form lupa password mengarahkan pengguna ke `/protected` yang crash dengan error: `TypeError: supabase.auth.getClaims is not a function`.
+  2. Logout tidak langsung menghapus sesi di antarmuka server components.
+* **Akar Masalah**:
+  - Method `getClaims()` adalah method non-standar yang tidak tersedia pada `@supabase/ssr`.
+  - Halaman `/protected` merupakan artefak boilerplate lama starter kit yang belum dibersihkan.
+* **Solusi**:
+  1. Mengarahkan form ganti password ke `/dashboard` di [update-password-form.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/components/update-password-form.tsx).
+  2. Mengganti seluruh pemanggilan `getClaims()` dengan `supabase.auth.getUser()` pada [auth-button.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/components/auth-button.tsx) dan [protected/page.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/protected/page.tsx).
+  3. Menambahkan `router.refresh()` pada [logout-button.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/components/logout-button.tsx) agar cookie sesi langsung tersinkronisasi.
+
+---
+
 ## 2. Peningkatan Fitur & Antarmuka (UI/UX Overhaul)
 
 ### 🎨 1. Modernisasi Input Jadwal (Date & Time Picker)

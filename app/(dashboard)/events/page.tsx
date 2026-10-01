@@ -81,8 +81,11 @@ export default async function EventsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event) => {
-            const registrations = event.registrations as unknown as { count: number }[] | null;
-            const registeredCount = registrations?.[0]?.count ?? 0;
+            const registrations = event.registrations as unknown as
+              | { id: string; status: string }[]
+              | null;
+            const registeredCount =
+              registrations?.filter((r) => r.status !== "CANCELLED").length ?? 0;
             const isFull =
               event.capacity !== null && registeredCount >= event.capacity;
             const isRegistered = registeredEventIds.has(event.id);

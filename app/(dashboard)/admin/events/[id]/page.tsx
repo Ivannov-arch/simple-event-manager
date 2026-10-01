@@ -83,8 +83,11 @@ export default async function AdminEventDetailPage({
 
   const registrations = await getEventRegistrations(id);
 
-  const regs = event.registrations as unknown as { count: number }[] | null;
-  const registeredCount = regs?.[0]?.count ?? 0;
+  const regs = event.registrations as unknown as
+    | { id: string; status: string }[]
+    | null;
+  const registeredCount =
+    regs?.filter((r) => r.status !== "CANCELLED").length ?? 0;
   const attendedCount = registrations.filter((r) => r.status === "ATTENDED").length;
 
   return (

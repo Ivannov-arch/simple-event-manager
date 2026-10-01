@@ -65,7 +65,7 @@ export async function getAdminEvents() {
     .select(
       `
       *,
-      registrations(count),
+      registrations(id, status),
       creator:profiles!created_by(full_name, username)
     `
     )
@@ -86,7 +86,7 @@ export async function getPublishedEvents() {
     .select(
       `
       *,
-      registrations(count)
+      registrations(id, status)
     `
     )
     .eq("status", "PUBLISHED")
@@ -107,7 +107,7 @@ export async function getEventById(eventId: string) {
     .select(
       `
       *,
-      registrations(count),
+      registrations(id, status),
       creator:profiles!created_by(full_name, username)
     `
     )

@@ -62,8 +62,11 @@ export default async function AdminPage() {
   };
 
   const totalParticipants = events.reduce((sum, e) => {
-    const regs = e.registrations as unknown as { count: number }[] | null;
-    return sum + (regs?.[0]?.count ?? 0);
+    const regs = e.registrations as unknown as
+      | { id: string; status: string }[]
+      | null;
+    const count = regs?.filter((r) => r.status !== "CANCELLED").length ?? 0;
+    return sum + count;
   }, 0);
 
   return (
@@ -171,8 +174,10 @@ export default async function AdminPage() {
         ) : (
           <div className="grid grid-cols-1 gap-3">
             {events.slice(0, 5).map((event) => {
-              const regs = event.registrations as unknown as { count: number }[] | null;
-              const count = regs?.[0]?.count ?? 0;
+              const regs = event.registrations as unknown as
+                | { id: string; status: string }[]
+                | null;
+              const count = regs?.filter((r) => r.status !== "CANCELLED").length ?? 0;
               return (
                 <Link
                   key={event.id}

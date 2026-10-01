@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   // `next` can be used to redirect the user to a specific page after login
-  const next = searchParams.get("next") ?? "/";
+  const next = searchParams.get("next") ?? "/dashboard";
 
   if (code) {
     const supabase = await createClient();
@@ -32,9 +32,16 @@ export async function GET(request: NextRequest) {
       } else {
         return NextResponse.redirect(`${origin}${next}`);
       }
+    } else {
+      console.error("Auth callback error:", error);
+      return NextResponse.redirect(
+        `${origin}/auth/error?error=${encodeURIComponent(error.message)}`
+      );
     }
   }
 
   // If the code is missing or exchange fails, redirect to error page
-  return NextResponse.redirect(`${origin}/auth/error`);
+  return NextResponse.redirect(
+    `${origin}/auth/error?error=${encodeURIComponent("Missing authorization code")}`
+  );
 }
