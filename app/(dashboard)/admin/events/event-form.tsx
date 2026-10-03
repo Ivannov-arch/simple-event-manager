@@ -25,6 +25,9 @@ import {
   Link as LinkIcon,
   Eye,
   PenLine,
+  Image as ImageIcon,
+  Upload,
+  X,
 } from "lucide-react";
 
 interface EventFormProps {
@@ -63,6 +66,15 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
     initialData?.capacity != null ? String(initialData.capacity) : ""
   );
   const [status, setStatus] = useState<EventStatus>(initialData?.status ?? "DRAFT");
+
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
+    initialData?.cover_image_url ?? null
+  );
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -124,6 +136,43 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
     }
   };
 
+  const applyImageFile = (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size must be less than 5MB.");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload a valid image file.");
+      return;
+    }
+    setError(null);
+    setCoverImageFile(file);
+    setCoverImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) applyImageFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) applyImageFile(file);
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -150,6 +199,39 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
       return;
     }
 
+    let coverImageUrl: string | null = initialData?.cover_image_url ?? null;
+
+    if (coverImageFile) {
+      setIsUploadingImage(true);
+      try {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+
+        const fileExt = coverImageFile.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `covers/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("event-covers")
+          .upload(filePath, coverImageFile, { cacheControl: "3600", upsert: false });
+
+        if (uploadError) throw new Error(uploadError.message);
+
+        const { data } = supabase.storage
+          .from("event-covers")
+          .getPublicUrl(filePath);
+
+        coverImageUrl = data.publicUrl;
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to upload image.");
+        setIsLoading(false);
+        setIsUploadingImage(false);
+        return;
+      } finally {
+        setIsUploadingImage(false);
+      }
+    }
+
     const startISO = startDateObj.toISOString();
     const endISO = endDateObj.toISOString();
 
@@ -161,6 +243,7 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
       end_time: endISO,
       capacity: capacity === "" ? null : Number(capacity),
       status,
+      cover_image_url: coverImageUrl,
     };
 
     try {
@@ -197,6 +280,85 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
             autoComplete="off"
             className="bg-white/5 border-white/10 focus:border-violet-500 rounded-xl text-base py-2.5 font-medium"
           />
+        </div>
+
+        {/* Cover Image Upload */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+            <ImageIcon className="h-3.5 w-3.5 text-violet-400" />
+            <span>Cover Image (Optional)</span>
+          </Label>
+
+          <label
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`relative flex flex-col items-center justify-center w-full rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
+              isDragging
+                ? "border-violet-500 bg-violet-500/10 scale-[1.01]"
+                : coverImagePreview
+                ? "border-white/10 bg-transparent"
+                : "border-white/20 bg-white/5 hover:bg-white/10 hover:border-violet-500/50"
+            }`}
+          >
+            {/* Preview mode */}
+            {coverImagePreview ? (
+              <div className="relative w-full h-48 rounded-xl overflow-hidden group">
+                <img
+                  src={coverImagePreview}
+                  alt="Cover preview"
+                  className="w-full h-full object-cover"
+                />
+                {/* Overlay on hover */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-white bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                    <Upload className="h-3.5 w-3.5" />
+                    Change image
+                  </span>
+                </div>
+                {/* Remove button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCoverImageFile(null);
+                    setCoverImagePreview(null);
+                  }}
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-600 z-10"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              /* Drop zone */
+              <div className={`flex flex-col items-center justify-center gap-2 py-8 px-4 transition-all ${
+                isDragging ? "scale-105" : ""
+              }`}>
+                <div className={`p-3 rounded-full transition-colors ${
+                  isDragging ? "bg-violet-500/20" : "bg-white/5"
+                }`}>
+                  <Upload className={`h-6 w-6 transition-colors ${
+                    isDragging ? "text-violet-400" : "text-muted-foreground"
+                  }`} />
+                </div>
+                <div className="text-center">
+                  <p className={`text-sm font-medium transition-colors ${
+                    isDragging ? "text-violet-300" : "text-muted-foreground"
+                  }`}>
+                    {isDragging ? "Drop image here" : "Drag & drop or click to upload"}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-0.5">JPG, PNG, WebP · Max 5MB</p>
+                </div>
+              </div>
+            )}
+
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleCoverImageChange}
+              className="hidden"
+            />
+          </label>
         </div>
 
         {/* Description with Markdown Support & Live Preview */}
@@ -477,10 +639,15 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
         <div className="flex gap-3 pt-2">
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isUploadingImage}
             className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-violet-600/20 active:scale-95 transition-all"
           >
-            {isLoading ? (
+            {isUploadingImage ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Uploading image...
+              </span>
+            ) : isLoading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Processing...
@@ -495,7 +662,7 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
             type="button"
             variant="outline"
             onClick={() => router.back()}
-            disabled={isLoading}
+            disabled={isLoading || isUploadingImage}
             className="border-white/10 hover:bg-white/5 rounded-xl"
           >
             Cancel

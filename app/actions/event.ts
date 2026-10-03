@@ -15,6 +15,7 @@ export interface EventPayload {
   end_time: string;
   capacity?: number | null;
   status?: EventStatus;
+  cover_image_url?: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -50,6 +51,34 @@ async function getAdminUser() {
 
   return { supabase, userId };
 }
+
+/**
+ * Upload cover image to Supabase Storage.
+ * Returns the public URL of the uploaded image.
+ */
+export async function uploadEventCoverImage(file: File): Promise<string> {
+  const { supabase, userId } = await getAdminUser();
+
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${userId}-${Date.now()}.${fileExt}`;
+  const filePath = `covers/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("event-covers")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data } = supabase.storage
+    .from("event-covers")
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+}
+
 
 // ─── Read ─────────────────────────────────────────────────────────────────────
 

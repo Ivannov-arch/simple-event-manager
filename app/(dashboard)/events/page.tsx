@@ -100,6 +100,16 @@ export default async function EventsPage() {
                 href={`/events/${event.id}`}
                 className="group relative rounded-3xl glass-panel p-6 flex flex-col justify-between hover:border-violet-500/40 transition-all hover:shadow-xl hover:shadow-violet-500/5 active:scale-[0.99]"
               >
+                {event.cover_image_url && (
+                  <div className="relative w-full h-32 rounded-2xl overflow-hidden mb-4 -mt-1">
+                    <img
+                      src={event.cover_image_url}
+                      alt={event.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                )}
                 <div className="space-y-4">
                   {/* Top Badges */}
                   <div className="flex items-center justify-between gap-2">
