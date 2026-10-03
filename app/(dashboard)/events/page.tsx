@@ -28,6 +28,24 @@ function formatTime(dateString: string) {
   });
 }
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/^#{1,6}\s+/gm, "")       // headings: ## Title
+    .replace(/\*\*(.+?)\*\*/g, "$1")    // bold: **text**
+    .replace(/\*(.+?)\*/g, "$1")        // italic: *text*
+    .replace(/_{1,2}(.+?)_{1,2}/g, "$1") // underscore bold/italic
+    .replace(/~~(.+?)~~/g, "$1")        // strikethrough
+    .replace(/`{1,3}[^`]*`{1,3}/g, "") // inline & fenced code
+    .replace(/^[-*+]\s+/gm, "")        // unordered list markers
+    .replace(/^\d+\.\s+/gm, "")        // ordered list markers
+    .replace(/^>\s?/gm, "")            // blockquotes
+    .replace(/!?\[([^\]]*?)\]\([^)]*?\)/g, "$1") // links & images
+    .replace(/^[-*_]{3,}$/gm, "")      // horizontal rules
+    .replace(/\n{2,}/g, " ")           // collapse blank lines
+    .replace(/\n/g, " ")              // collapse single newlines
+    .trim();
+}
+
 export default async function EventsPage() {
   const [events, myRegistrations] = await Promise.all([
     getPublishedEvents(),
@@ -142,7 +160,7 @@ export default async function EventsPage() {
                     </h2>
                     {event.description && (
                       <p className="text-xs text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
-                        {event.description}
+                        {stripMarkdown(event.description)}
                       </p>
                     )}
                   </div>

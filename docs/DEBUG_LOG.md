@@ -176,3 +176,12 @@ This document summarizes root cause analyses and technical bug fixes for the **E
   1. Redirected the password-change form to `/dashboard` in [update-password-form.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/components/update-password-form.tsx).
   2. Replaced all `getClaims()` calls with `supabase.auth.getUser()` in [auth-button.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/components/auth-button.tsx) and [protected/page.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/protected/page.tsx).
   3. Added `router.refresh()` to [logout-button.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/components/logout-button.tsx) so the session cookie is immediately synchronized.
+
+---
+
+### 🔴 Bug 16: Raw Markdown Syntax Leaking into Event Card Previews
+* **Symptom**: Event cards on the public events catalog (`/events`) displayed raw Markdown tokens (e.g. `### Event Overview`, `## Agenda Utama:`, `**bold**`, list dashes) inside the 2-line truncated text preview, leading to an unpolished and cluttered card layout.
+* **Root Cause**:
+  - The card snippet directly interpolated raw `event.description` inside a `line-clamp-2` container without stripping markdown syntax. While event detail pages use `<MarkdownRenderer>`, card previews expect clean plain text.
+* **Fix**:
+  - Implemented a `stripMarkdown(text: string)` utility function in [events/page.tsx](file:///c:/Coding/Friends/Jeremia/event-manager/app/(dashboard)/events/page.tsx) that strips headings (`#`), bold/italic markers (`**`, `*`, `_`), strikethroughs (`~~`), list markers, blockquotes (`>`), links/images (`[text](url)`), inline/fenced code, horizontal rules (`---`), and collapses excess whitespace into clean plain text for card previews.
